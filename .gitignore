@@ -1,0 +1,18 @@
+node_modules/
+dist/
+.env
+.env.*
+
+# Local app data and private invoice files
+data/*.json
+uploads/*
+!data/.gitkeep
+!uploads/.gitkeep
+
+# Logs and OS/editor noise
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
