@@ -24,4 +24,10 @@ app.get('/api/summary', async (_req, res) => { const invoices = await read(); co
 app.post('/api/invoices', upload.single('invoice'), async (req, res) => { const { merchant, amount, date, category } = req.body; if (!merchant?.trim() || !Number(amount) || !date) return res.status(400).json({ error: 'Merchant, amount, and date are required.' }); if (category && !categories.includes(category)) return res.status(400).json({ error: 'Invalid category.' }); const invoice = { id: nanoid(12), merchant: merchant.trim(), amount: Number(amount), date, category: category || categorize(`${merchant} ${req.file?.originalname || ''}`), fileName: req.file?.originalname || null, fileUrl: req.file ? `/uploads/${req.file.filename}` : null, createdAt: new Date().toISOString() }; const invoices = await read(); invoices.push(invoice); await save(invoices); res.status(201).json(invoice); });
 app.delete('/api/invoices/:id', async (req, res) => { const invoices = await read(); const item = invoices.find(i => i.id === req.params.id); if (!item) return res.sendStatus(404); await save(invoices.filter(i => i.id !== item.id)); if (item.fileUrl) await fs.unlink(path.join(uploadsDirectory, path.basename(item.fileUrl))).catch(() => {}); res.sendStatus(204); });
 app.use((error, _req, res, _next) => { if (error instanceof multer.MulterError) return res.status(400).json({ error: 'Invoice must be 10 MB or smaller.' }); res.status(400).json({ error: 'Upload a PDF, JPEG, or PNG invoice.' }); });
-app.listen(3001, () => console.log('Ledgerly API running at http://localhost:3001'));
+export default app;
+
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(3001, () => {
+    console.log('Ledgerly API running at http://localhost:3001');
+  });
+}
